@@ -54,13 +54,10 @@ class _JetSelectionScreenState extends State<JetSelectionScreen>
         _showAll ? JetModel.sampleJets : JetModel.sampleJets.take(3).toList();
 
     return LuxuryFramedScreen(
-      showCornerSlashes: true,
-      child: Stack(
-        children: [
-          // Scrollable jet fleet view
-          ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-            children: [
+      child: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+          children: [
               // Back Button
               Align(
                 alignment: Alignment.centerLeft,
@@ -268,9 +265,8 @@ class _JetSelectionScreenState extends State<JetSelectionScreen>
               ),
             ],
           ),
-        ],
-      ),
-    );
+        ),
+      );
   }
 
   Widget _buildJetCard({

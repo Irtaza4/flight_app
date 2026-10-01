@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
-import '../widgets/luxury_border_frame.dart';
 import 'flight_search_screen.dart';
 
 class WelcomeScreen extends StatefulWidget {
@@ -22,7 +21,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1400),
+      duration: const Duration(milliseconds: 1200),
     );
 
     _fadeAnim = CurvedAnimation(
@@ -31,16 +30,16 @@ class _WelcomeScreenState extends State<WelcomeScreen>
     );
 
     _slideAnim = Tween<Offset>(
-      begin: const Offset(0, 0.08),
+      begin: const Offset(0, 0.06),
       end: Offset.zero,
     ).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.2, 1.0, curve: Curves.easeOutCubic),
+        curve: const Interval(0.15, 1.0, curve: Curves.easeOutCubic),
       ),
     );
 
-    _scaleAnim = Tween<double>(begin: 1.05, end: 1.0).animate(
+    _scaleAnim = Tween<double>(begin: 1.04, end: 1.0).animate(
       CurvedAnimation(
         parent: _controller,
         curve: Curves.easeOutCubic,
@@ -77,18 +76,19 @@ class _WelcomeScreenState extends State<WelcomeScreen>
             ),
           );
         },
-        transitionDuration: const Duration(milliseconds: 600),
+        transitionDuration: const Duration(milliseconds: 550),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return LuxuryFramedScreen(
-      showCornerSlashes: false,
-      child: Stack(
+    return Scaffold(
+      backgroundColor: AppColors.bgPrimary,
+      body: Stack(
+        fit: StackFit.expand,
         children: [
-          // Background Image with gentle scale zoom animation
+          // Full bleed Background Image
           Positioned.fill(
             child: ScaleTransition(
               scale: _scaleAnim,
@@ -100,7 +100,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
             ),
           ),
 
-          // Gradient scrim overlay for readability
+          // Gradient Overlay to ensure crisp contrast for text and buttons
           Positioned.fill(
             child: Container(
               decoration: BoxDecoration(
@@ -108,27 +108,27 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Colors.black.withOpacity(0.85),
-                    Colors.black.withOpacity(0.25),
-                    Colors.black.withOpacity(0.4),
-                    Colors.black.withOpacity(0.92),
+                    Colors.black.withValues(alpha: 0.75),
+                    Colors.transparent,
+                    Colors.black.withValues(alpha: 0.35),
+                    Colors.black.withValues(alpha: 0.90),
                   ],
-                  stops: const [0.0, 0.28, 0.65, 0.95],
+                  stops: const [0.0, 0.30, 0.65, 0.95],
                 ),
               ),
             ),
           ),
 
-          // Content Layer
+          // Edge-to-Edge Screen Content
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
+              padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
 
-                  // Top Heading: "Welcome aboard —"
+                  // Header: "Welcome\naboard —————"
                   FadeTransition(
                     opacity: _fadeAnim,
                     child: SlideTransition(
@@ -137,12 +137,34 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Welcome\naboard —',
+                            'Welcome',
                             style: AppTypography.serifTitle(
-                              fontSize: 48,
-                              height: 1.05,
+                              fontSize: 54,
+                              height: 1.0,
                               color: AppColors.goldAccent,
                             ),
+                          ),
+                          const SizedBox(height: 2),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                'aboard',
+                                style: AppTypography.serifTitle(
+                                  fontSize: 54,
+                                  height: 1.0,
+                                  color: AppColors.goldAccent,
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Container(
+                                  height: 1.5,
+                                  color: AppColors.goldAccent.withValues(alpha: 0.8),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                            ],
                           ),
                         ],
                       ),
@@ -151,7 +173,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
 
                   const Spacer(),
 
-                  // Bottom Description and Action Button
+                  // Bottom Tagline & Action Button
                   FadeTransition(
                     opacity: _fadeAnim,
                     child: SlideTransition(
@@ -159,41 +181,41 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Subtitle: "Private jet for your live, work and other goals"
+                          // "Private jet for your live, work and other goals"
                           ConstrainedBox(
-                            constraints: const BoxConstraints(maxWidth: 240),
+                            constraints: const BoxConstraints(maxWidth: 260),
                             child: Text(
                               'Private jet for your live, work and other goals',
                               style: AppTypography.sansBody(
-                                fontSize: 16,
-                                color: AppColors.goldAccent.withOpacity(0.95),
-                                height: 1.4,
+                                fontSize: 18,
+                                color: AppColors.goldAccent.withValues(alpha: 0.95),
+                                height: 1.35,
                               ),
                             ),
                           ),
-                          const SizedBox(height: 28),
+                          const SizedBox(height: 24),
 
-                          // Button: "Get started"
+                          // "Get started" button
                           InkWell(
                             onTap: _navigateToFlightSearch,
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(8),
                             child: Container(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 26,
-                                vertical: 14,
+                                horizontal: 24,
+                                vertical: 13,
                               ),
                               decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10),
+                                borderRadius: BorderRadius.circular(8),
                                 border: Border.all(
-                                  color: AppColors.goldAccent.withOpacity(0.85),
+                                  color: AppColors.goldAccent.withValues(alpha: 0.8),
                                   width: 1.4,
                                 ),
-                                color: Colors.black.withOpacity(0.45),
+                                color: Colors.black.withValues(alpha: 0.35),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: AppColors.goldAccent.withOpacity(0.12),
-                                    blurRadius: 16,
-                                    spreadRadius: 2,
+                                    color: AppColors.goldAccent.withValues(alpha: 0.1),
+                                    blurRadius: 14,
+                                    spreadRadius: 1,
                                   ),
                                 ],
                               ),
@@ -203,12 +225,12 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                   fontSize: 16,
                                   fontWeight: FontWeight.w500,
                                   color: AppColors.goldAccent,
-                                  letterSpacing: 0.3,
+                                  letterSpacing: 0.2,
                                 ),
                               ),
                             ),
                           ),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 16),
                         ],
                       ),
                     ),

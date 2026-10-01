@@ -165,7 +165,6 @@ class _FlightSearchScreenState extends State<FlightSearchScreen> {
   @override
   Widget build(BuildContext context) {
     return LuxuryFramedScreen(
-      showCornerSlashes: true,
       child: Column(
         children: [
           // Top Half: 3D Globe with Flight Map

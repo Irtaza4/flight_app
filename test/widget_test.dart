@@ -6,8 +6,9 @@ void main() {
     await tester.pumpWidget(const PrivateJetApp());
     await tester.pumpAndSettle();
 
-    // Verify Welcome text and Get started button are present
-    expect(find.text('Welcome\naboard —'), findsOneWidget);
+    // Verify Welcome and aboard text widgets and Get started button are present
+    expect(find.text('Welcome'), findsOneWidget);
+    expect(find.text('aboard'), findsOneWidget);
     expect(find.text('Get started'), findsOneWidget);
   });
 }
