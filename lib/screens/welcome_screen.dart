@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import 'flight_search_screen.dart';
@@ -10,48 +11,90 @@ class WelcomeScreen extends StatefulWidget {
 }
 
 class _WelcomeScreenState extends State<WelcomeScreen>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
+    with TickerProviderStateMixin {
+  late AnimationController _entranceController;
+  late AnimationController _flightHoverController;
+
   late Animation<double> _fadeAnim;
-  late Animation<Offset> _slideAnim;
-  late Animation<double> _scaleAnim;
+  late Animation<Offset> _slideTextAnim;
+  late Animation<double> _scaleSkyAnim;
+  late Animation<Offset> _planeEntranceAnim;
+  late Animation<double> _planeRotateAnim;
+  late Animation<double> _planeScaleAnim;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
+
+    // Main entrance orchestration controller (1.8s)
+    _entranceController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1200),
+      duration: const Duration(milliseconds: 1800),
     );
 
+    // Continuous cruising hover animation (gentle aerodynamic float)
+    _flightHoverController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 3600),
+    )..repeat(reverse: true);
+
+    // Sky background zoom
+    _scaleSkyAnim = Tween<double>(begin: 1.08, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _entranceController,
+        curve: const Interval(0.0, 0.8, curve: Curves.easeOutCubic),
+      ),
+    );
+
+    // Text fade & slide
     _fadeAnim = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.0, 0.8, curve: Curves.easeOut),
+      parent: _entranceController,
+      curve: const Interval(0.1, 0.7, curve: Curves.easeOut),
     );
-
-    _slideAnim = Tween<Offset>(
-      begin: const Offset(0, 0.06),
+    _slideTextAnim = Tween<Offset>(
+      begin: const Offset(0, 0.08),
       end: Offset.zero,
     ).animate(
       CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.15, 1.0, curve: Curves.easeOutCubic),
+        parent: _entranceController,
+        curve: const Interval(0.1, 0.75, curve: Curves.easeOutCubic),
       ),
     );
 
-    _scaleAnim = Tween<double>(begin: 1.04, end: 1.0).animate(
+    // Aeroplane dynamic entrance: gliding in from right side
+    _planeEntranceAnim = Tween<Offset>(
+      begin: const Offset(1.1, 0.25),
+      end: Offset.zero,
+    ).animate(
       CurvedAnimation(
-        parent: _controller,
-        curve: Curves.easeOutCubic,
+        parent: _entranceController,
+        curve: const Interval(0.12, 0.95, curve: Curves.easeOutQuart),
       ),
     );
 
-    _controller.forward();
+    // Aeroplane pitch rotation settling into cruising alignment
+    _planeRotateAnim = Tween<double>(begin: 0.10, end: 0.0).animate(
+      CurvedAnimation(
+        parent: _entranceController,
+        curve: const Interval(0.12, 0.95, curve: Curves.easeOutCubic),
+      ),
+    );
+
+    // Aeroplane subtle scale settling
+    _planeScaleAnim = Tween<double>(begin: 0.92, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _entranceController,
+        curve: const Interval(0.15, 0.95, curve: Curves.easeOutCubic),
+      ),
+    );
+
+    _entranceController.forward();
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _entranceController.dispose();
+    _flightHoverController.dispose();
     super.dispose();
   }
 
@@ -83,24 +126,60 @@ class _WelcomeScreenState extends State<WelcomeScreen>
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+
     return Scaffold(
       backgroundColor: AppColors.bgPrimary,
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // Full bleed Background Image
+          // 1. Starry Sky & Sunset Horizon Background (Separate Layer)
           Positioned.fill(
             child: ScaleTransition(
-              scale: _scaleAnim,
+              scale: _scaleSkyAnim,
               child: Image.asset(
-                'assets/images/welcome_bg.jpg',
+                'assets/images/welcome_sky_bg.jpg',
                 fit: BoxFit.cover,
                 alignment: Alignment.center,
               ),
             ),
           ),
 
-          // Gradient Overlay to ensure crisp contrast for text and buttons
+          // 2. Animated Real 3D Aeroplane Layer (Completely uncropped, glides in & hovers)
+          Positioned(
+            top: screenSize.height * 0.18,
+            left: 0,
+            right: 0,
+            height: screenSize.height * 0.48,
+            child: AnimatedBuilder(
+              animation: _flightHoverController,
+              builder: (context, child) {
+                // Gentle aerodynamic cruising oscillation
+                final hoverOffset = math.sin(_flightHoverController.value * math.pi * 2) * 6.0;
+                final hoverAngle = math.cos(_flightHoverController.value * math.pi * 2) * 0.015;
+
+                return SlideTransition(
+                  position: _planeEntranceAnim,
+                  child: Transform.translate(
+                    offset: Offset(0, hoverOffset),
+                    child: Transform.rotate(
+                      angle: _planeRotateAnim.value + hoverAngle,
+                      child: ScaleTransition(
+                        scale: _planeScaleAnim,
+                        child: Image.asset(
+                          'assets/images/welcome_plane_hero.png',
+                          fit: BoxFit.contain,
+                          alignment: Alignment.center,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+
+          // 3. Contrast & Ambient Gradient Overlay
           Positioned.fill(
             child: Container(
               decoration: BoxDecoration(
@@ -108,18 +187,18 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Colors.black.withValues(alpha: 0.75),
+                    Colors.black.withValues(alpha: 0.65),
                     Colors.transparent,
-                    Colors.black.withValues(alpha: 0.35),
-                    Colors.black.withValues(alpha: 0.90),
+                    Colors.transparent,
+                    Colors.black.withValues(alpha: 0.88),
                   ],
-                  stops: const [0.0, 0.30, 0.65, 0.95],
+                  stops: const [0.0, 0.28, 0.65, 0.95],
                 ),
               ),
             ),
           ),
 
-          // Edge-to-Edge Screen Content
+          // 4. UI Content: Header & Bottom Actions
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 20),
@@ -132,7 +211,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                   FadeTransition(
                     opacity: _fadeAnim,
                     child: SlideTransition(
-                      position: _slideAnim,
+                      position: _slideTextAnim,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -173,15 +252,15 @@ class _WelcomeScreenState extends State<WelcomeScreen>
 
                   const Spacer(),
 
-                  // Bottom Tagline & Action Button
+                  // Bottom Tagline & "Get started" button
                   FadeTransition(
                     opacity: _fadeAnim,
                     child: SlideTransition(
-                      position: _slideAnim,
+                      position: _slideTextAnim,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // "Private jet for your live, work and other goals"
+                          // Tagline
                           ConstrainedBox(
                             constraints: const BoxConstraints(maxWidth: 260),
                             child: Text(
@@ -195,7 +274,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                           ),
                           const SizedBox(height: 24),
 
-                          // "Get started" button
+                          // Action Button
                           InkWell(
                             onTap: _navigateToFlightSearch,
                             borderRadius: BorderRadius.circular(8),
