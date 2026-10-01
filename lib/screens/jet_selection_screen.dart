@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import '../models/jet_model.dart';
 import '../theme/app_theme.dart';
 import '../widgets/concierge_modal.dart';
-import '../widgets/jet_detail_modal.dart';
 import '../widgets/luxury_border_frame.dart';
+import 'jet_detail_screen.dart';
 
 class JetSelectionScreen extends StatefulWidget {
   final String fromCity;
@@ -280,10 +280,24 @@ class _JetSelectionScreenState extends State<JetSelectionScreen>
   }) {
     return GestureDetector(
       onTap: () {
-        JetDetailModal.show(
+        Navigator.push(
           context,
-          jet,
-          '${widget.fromCity} → ${widget.toCity}',
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                JetDetailScreen(
+              jet: jet,
+              route: '${widget.fromCity} → ${widget.toCity}',
+            ),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              final curved = CurvedAnimation(
+                parent: animation,
+                curve: Curves.easeInOutCubic,
+              );
+              return FadeTransition(opacity: curved, child: child);
+            },
+            transitionDuration: const Duration(milliseconds: 500),
+          ),
         );
       },
       child: Stack(
@@ -304,7 +318,7 @@ class _JetSelectionScreenState extends State<JetSelectionScreen>
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.5),
+                  color: Colors.black.withValues(alpha: 0.5),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
@@ -382,7 +396,7 @@ class _JetSelectionScreenState extends State<JetSelectionScreen>
             ),
           ),
 
-          // Real Aeroplane image breaking out of the card with dynamic glide & hover
+          // Real Aeroplane image breaking out of the card with dynamic Hero flight & hover
           Positioned(
             left: index == 0
                 ? -30
@@ -406,9 +420,27 @@ class _JetSelectionScreenState extends State<JetSelectionScreen>
                           ? 185
                           : 175,
                   height: 135,
-                  child: Image.asset(
-                    jet.imagePath,
-                    fit: BoxFit.contain,
+                  child: Hero(
+                    tag: 'jet_hero_${jet.id}',
+                    flightShuttleBuilder: (
+                      flightContext,
+                      animation,
+                      flightDirection,
+                      fromHeroContext,
+                      toHeroContext,
+                    ) {
+                      return Material(
+                        color: Colors.transparent,
+                        child: Image.asset(
+                          jet.imagePath,
+                          fit: BoxFit.contain,
+                        ),
+                      );
+                    },
+                    child: Image.asset(
+                      jet.imagePath,
+                      fit: BoxFit.contain,
+                    ),
                   ),
                 ),
               ),
