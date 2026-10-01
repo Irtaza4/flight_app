@@ -94,11 +94,13 @@ class _JetSelectionScreenState extends State<JetSelectionScreen>
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'Choose your jet',
-                    style: AppTypography.serifTitle(
-                      fontSize: 34,
-                      color: AppColors.goldAccent,
+                  Expanded(
+                    child: Text(
+                      'Choose your jet',
+                      style: AppTypography.serifTitle(
+                        fontSize: 34,
+                        color: AppColors.goldAccent,
+                      ),
                     ),
                   ),
                   IconButton(
